@@ -1,0 +1,20 @@
+
+    {
+    "version": "0.2.0",
+    "configurations": [
+        
+        {
+            "name": "Attach to Integrated Browser",
+            "request": "attach",
+            "type": "editor-browser",
+            "webRoot": "${workspaceFolder}"
+        },
+        {
+            "type": "firefox",
+            "request": "launch",
+            "name": "Open portfolio.html",
+            "file": "${workspaceFolder}/portfolio.html",
+            "firefoxExecutable": "/Applications/Zen Browser.app/Contents/MacOS/zen"
+        }
+    ]
+}

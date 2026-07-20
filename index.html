@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Chris Jobi · Digital Ecosystem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=JetBrains+Mono:wght@300;400;500&family=Playfair+Display:ital,wght@1,400;1,500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #fafafa;
+    --surface: #ffffff;
+    --surface2: #f3f3f5;
+    --border: rgba(0,0,0,0.07);
+    --accent: #ff3366;
+    --text: #111115;
+    --muted: #71717a;
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-cursive: 'Playfair Display', serif;
+  }
+
+  html, body { background: var(--bg); color: var(--text); font-family: var(--font-display); min-height: 100vh; overflow-x: hidden; }
+
+  /* ── MOUSE LENS REVEAL ENGINE ── */
+  #cursor-lens {
+    position: fixed; top: 0; left: 0;
+    width: 24px; height: 24px;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 10000;
+    transform: translate(-50%, -50%);
+    display: flex; align-items: center; justify-content: center;
+    transition: width 0.2s, height 0.2s, background 0.2s;
+  }
+  #lens-code {
+    font-family: var(--font-mono); font-size: 8px; color: var(--accent);
+    white-space: nowrap; opacity: 0; pointer-events: none; background: #111115;
+    padding: 2px 6px; border-radius: 4px; position: absolute; left: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  body.reveal-active #cursor-lens { width: 14px; height: 14px; background: rgba(255, 51, 102, 0.25); }
+  body.reveal-active #lens-code { opacity: 1; }
+
+  /* ── GRAPHICAL STRUCTURE OVERVIEW ── */
+  .wrapper { max-width: 840px; margin: 0 auto; padding: 0 32px 80px; }
+  header { padding: 80px 0 48px; display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--border); }
+  .logo-area { display: flex; flex-direction: column; gap: 8px; }
+  .logo { font-size: 12px; font-family: var(--font-mono); color: var(--text); letter-spacing: 0.1em; text-transform: uppercase; }
+  h1 { font-size: clamp(36px, 7vw, 56px); font-weight: 800; line-height: 1.05; letter-spacing: -0.04em; }
+  h1 span { font-family: var(--font-cursive); font-weight: 400; font-style: italic; color: var(--accent); }
+  .tagline { font-size: 13px; font-family: var(--font-mono); color: var(--muted); margin-top: 12px; }
+  
+  .status-badge { display: flex; align-items: center; gap: 8px; font-size: 11px; font-family: var(--font-mono); letter-spacing: 0.05em; text-transform: uppercase; padding: 6px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 30px; }
+  .status-dot { width: 6px; height: 6px; background: #10b981; border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); } 70% { box-shadow: 0 0 0 6px rgba(16,185,129,0); } 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); } }
+
+  /* ── PORTRAIT PROFILE ── */
+  .profile-section { display: grid; grid-template-columns: 180px 1fr; gap: 40px; margin: 56px 0; padding: 20px 0; }
+  .profile-img-wrap { width: 180px; height: 180px; border-radius: 50%; overflow: hidden; background: #111115; border: 2px solid var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+  .profile-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(1.05) contrast(1.1) hue-rotate(140deg) saturate(0.2); mix-blend-mode: luminosity; }
+  .profile-info { display: flex; flex-direction: column; justify-content: center; }
+  .profile-info h2 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 14px; }
+  .profile-info h2 span { font-family: var(--font-cursive); font-weight: 400; color: var(--accent); }
+  .profile-info p { font-size: 15px; color: var(--muted); line-height: 1.65; font-weight: 500; }
+
+  /* ── CONTINUOUS TICKER MARQUEE ── */
+  .ticker-wrap { overflow: hidden; width: 100%; border-bottom: 1px solid var(--border); padding: 16px 0; margin: 20px 0 40px; }
+  .ticker { display: flex; width: max-content; animation: ticker-move 20s linear infinite; }
+  @keyframes ticker-move { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .ticker-item { font-size: 11px; font-family: var(--font-mono); color: var(--muted); padding: 0 30px; display: flex; align-items: center; gap: 8px; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.08em; }
+  .ticker-item::after { content: '·'; color: var(--accent); font-size: 16px; margin-left: 30px; }
+
+  /* ── WATER PUDDLE PORTAL CONTEXT ── */
+  .puddle-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 40px 0; padding: 40px; background: var(--surface); border: 1px dashed var(--border); border-radius: 24px; text-align: center; }
+  .puddle-title { font-size: 13px; font-family: var(--font-mono); color: var(--muted); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.05em; }
+  #water-puddle {
+    width: 130px; height: 130px; background: linear-gradient(135deg, rgba(255, 51, 102, 0.3), rgba(56, 189, 248, 0.3));
+    border-radius: 43% 57% 62% 38% / 45% 41% 59% 55%;
+    animation: puddle-morph 6s ease-in-out infinite alternate;
+    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.7), 0 10px 30px rgba(255, 51, 102, 0.05);
+    cursor: pointer; transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  #water-puddle:hover { transform: scale(1.1); background: linear-gradient(135deg, rgba(255, 51, 102, 0.45), rgba(56, 189, 248, 0.45)); }
+  @keyframes puddle-morph {
+    0% { border-radius: 43% 57% 62% 38% / 45% 41% 59% 55%; }
+    50% { border-radius: 60% 40% 52% 48% / 50% 63% 37% 50%; }
+    100% { border-radius: 52% 48% 65% 35% / 40% 55% 45% 60%; }
+  }
+
+  /* ── OVERLAPPING MACOS CHAT / TERMINAL POPUP WINDOW ── */
+  #mac-terminal-popup {
+    position: fixed; bottom: 40px; right: 40px; width: 480px; height: 420px;
+    background: #141416; border-radius: 12px; box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column;
+    overflow: hidden; z-index: 10005; opacity: 0; transform: translateY(30px) scale(0.94);
+    pointer-events: none; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  #mac-terminal-popup.pop-open { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+  
+  #mac-terminal-popup.pop-minimized { height: 40px; width: 220px; bottom: 20px; right: 20px; opacity: 0.9; }
+  #mac-terminal-popup.pop-enlarged { width: calc(100vw - 80px); height: calc(100vh - 80px); bottom: 40px; right: 40px; }
+
+  .mac-header { background: #222226; padding: 12px 16px; display: flex; align-items: center; position: relative; border-bottom: 1px solid rgba(0,0,0,0.2); user-select: none; }
+  .mac-lights { display: flex; gap: 8px; z-index: 10; }
+  .mac-dot { width: 12px; height: 12px; border-radius: 50%; border: none; cursor: pointer; display: block; }
+  .mac-close { background: #ff5f56; }
+  .mac-min { background: #ffbd2e; }
+  .mac-max { background: #27c93f; }
+  .mac-title { position: absolute; left: 50%; transform: translateX(-50%); color: #8e8e93; font-size: 12px; font-family: var(--font-mono); pointer-events: none; }
+
+  .mac-body { flex: 1; padding: 20px; overflow-y: auto; font-family: var(--font-mono); font-size: 13px; line-height: 1.5; color: #f1f1f4; display: flex; flex-direction: column; gap: 10px; }
+  .term-history { flex: 1; overflow-y: auto; }
+  .term-history div { margin-bottom: 6px; }
+  .term-line span { color: #38bdf8; }
+  .term-accent { color: #ff3366; }
+  
+  /* CHIP CONTAINER LAYER */
+  .term-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 0; border-top: 1px solid rgba(255,255,255,0.05); }
+  .term-chip { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #8e8e93; font-family: var(--font-mono); font-size: 11px; padding: 4px 10px; border-radius: 4px; cursor: pointer; }
+  .term-chip:hover { color: #ffffff; border-color: var(--accent); }
+
+  .term-input-row { display: flex; align-items: center; gap: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; }
+  .term-prompt { color: #38bdf8; white-space: nowrap; }
+  .term-field { flex: 1; background: transparent; border: none; outline: none; color: #ffffff; font-family: var(--font-mono); font-size: 13px; }
+
+  /* STREAM LOADER BARS */
+  .typing-indicator { display: flex; align-items: center; gap: 4px; }
+  .typing-indicator span { width: 4px; height: 4px; background: #ffffff; border-radius: 50%; display: block; animation: bounce 1.2s infinite; }
+  .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%, 100% { transform: translateY(0); opacity: 0.3; } 50% { transform: translateY(-4px); opacity: 1; } }
+
+  @media(max-width:768px) {
+    header { flex-direction: column; }
+    .profile-section { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 24px; }
+     Tarpopup { width: calc(100vw - 40px); left: 20px; bottom: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="cursor-lens">
+  <div id="lens-code">&lt;div&gt;</div>
+</div>
+
+<div class="wrapper">
+  <!-- ENHANCED HERO BLOCK DISPLAY WRAPPED IN QUOTES -->
+  <header class="code-revealer" data-code='&lt;header class="profile-header"&gt;'>
+    <div class="logo-area">
+      <div class="logo">Chris Jobi / AI Architect</div>
+      <h1>Explore my <span>"About Me"</span></h1>
+      <p class="tagline">// BTech CS & AI · TKM College of Engineering</p>
+    </div>
+    <div class="status-badge"><div class="status-dot"></div>Online</div>
+  </header>
+
+  <section class="profile-section code-revealer" data-code='&lt;section class="about-me-grid"&gt;' id="node-profile">
+    <div class="profile-img-wrap">
+      <img src="/Users/chris/Documents/Portfolio/Upscale_image_clear_circle_picture_202606071646.jpeg" alt="Chris Jobi Portrait">
+    </div>
+    <div class="profile-info">
+      <h2>Hi, I am <span>Chris Jobi</span>.</h2>
+      <p>Second-year CS-AI student specializing in full-stack development, RAG frameworks, and advanced prompt engineering. I fuse robust backend architectures with beautiful UX paradigms.</p>
+    </div>
+  </section>
+
+  <div class="ticker-wrap code-revealer" data-code='&lt;div class="marquee-ticker"&gt;'>
+    <div class="ticker">
+      <span class="ticker-item">Python</span><span class="ticker-item">PHP</span>
+      <span class="ticker-item">Flask</span><span class="ticker-item">JavaFX</span>
+      <span class="ticker-item">RAG Pipelines</span><span class="ticker-item">Prompt Engineering</span>
+      <span class="ticker-item">Machine Learning</span><span class="ticker-item">NLP Deep Learning</span>
+      <span class="ticker-item">Python</span><span class="ticker-item">PHP</span>
+      <span class="ticker-item">Flask</span><span class="ticker-item">JavaFX</span>
+      <span class="ticker-item">RAG Pipelines</span><span class="ticker-item">Prompt Engineering</span>
+      <span class="ticker-item">Machine Learning</span><span class="ticker-item">NLP Deep Learning</span>
+    </div>
+  </div>
+
+  <div class="puddle-container">
+    <div class="puddle-title">Interactive Liquid Portal Node / Click to Pop Up Mini Terminal</div>
+    <div id="water-puddle" onclick="toggleTerminalPopup()"></div>
+  </div>
+</div>
+
+<!-- DUAL INTERACTIVE BASH CONSOLE + LLM AI CORE WINDOW -->
+<div id="mac-terminal-popup" onclick="focusTerminal()">
+  <div class="mac-header">
+    <div class="mac-lights">
+      <button class="mac-dot mac-close" onclick="closeTerminal(event)"></button>
+      <button class="mac-dot mac-min" onclick="minimizeTerminal(event)"></button>
+      <button class="mac-dot mac-max" onclick="enlargeTerminal(event)"></button>
+    </div>
+    <div class="mac-title">chris — dual-core — zsh</div>
+  </div>
+  <div class="mac-body">
+    <div class="term-history" id="termHistory">
+      <div>Session online. Execute shell commands or ask me anything directly.</div>
+      <div>Type <span class="term-accent">help</span> to scan available terminal parameters.</div>
+      <br>
+    </div>
+    <div class="term-chips">
+      <button class="term-chip" onclick="sendChip('skills')">skills</button>
+      <button class="term-chip" onclick="sendChip('projects')">projects</button>
+      <button class="term-chip" onclick="sendChip('What are your goals in AI engineering?')">AI Strategy</button>
+    </div>
+    <div class="term-input-row">
+      <div class="term-prompt">chris@macbook ~ %</div>
+      <input type="text" class="term-field" id="termInputField" onkeydown="handleInputSubmission(event)" autocomplete="off" spellcheck="false" />
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ── HIDDEN API PARAMETERS MATRIX ── */
+  const SYSTEM_GATEWAY = {
+    key: "YOUR_GROQ_API_KEY_HERE", // IMPORTANT: Do not hardcode API keys in public repositories!
+    url: "https://api.groq.com/openai/v1/chat/completions",
+    model: "llama-3.3-70b-versatile"
+  };
+
+  const AI_CONTEXT = `You are Chris Jobi, a second-year Computer Science & AI engineer at TKM College of Engineering. 
+  Core Stack: Python, PHP, CSS, Flask, JavaFX, Machine Learning, NLP, RAG Systems, Advanced Prompt Engineering.
+  Personality: Direct, technical, highly focused on crisp engineering metrics. Keep all text replies under 3 sentences max.`;
+
+  /* ── DOM CAPTURE REVEAL LENS ENGINE ── */
+  const lens = document.getElementById('cursor-lens');
+  const codeBox = document.getElementById('lens-code');
+
+  document.addEventListener('mousemove', e => {
+    lens.style.left = e.clientX + 'px';
+    lens.style.top = e.clientY + 'px';
+
+    const node = document.elementFromPoint(e.clientX, e.clientY);
+    const host = node ? node.closest('.code-revealer') : null;
+
+    if (host) {
+      document.body.classList.add('reveal-active');
+      codeBox.textContent = host.getAttribute('data-code');
+    } else {
+      document.body.classList.remove('reveal-active');
+    }
+  });
+
+  /* ── INTERACTIVE OVERLAY CONTROLLERS ── */
+  const popup = document.getElementById('mac-terminal-popup');
+  let chatHistory = [{ role: "system", content: AI_CONTEXT }];
+  let isFetching = false;
+
+  function toggleTerminalPopup() {
+    popup.classList.remove('pop-minimized', 'pop-enlarged');
+    popup.classList.toggle('pop-open');
+    if (popup.classList.contains('pop-open')) setTimeout(focusTerminal, 250);
+  }
+  function focusTerminal() { if (!popup.classList.contains('pop-minimized')) document.getElementById('termInputField').focus(); }
+  function closeTerminal(e) { e.stopPropagation(); popup.classList.remove('pop-open', 'pop-minimized', 'pop-enlarged'); }
+  function minimizeTerminal(e) { e.stopPropagation(); popup.classList.remove('pop-enlarged'); popup.classList.toggle('pop-minimized'); }
+  function enlargeTerminal(e) { e.stopPropagation(); popup.classList.remove('pop-minimized'); popup.classList.toggle('pop-enlarged'); }
+
+  function sendChip(txt) {
+    document.getElementById('termInputField').value = txt;
+    processInput(txt);
+  }
+
+  function handleInputSubmission(e) {
+    if (e.key === 'Enter') {
+      const field = document.getElementById('termInputField');
+      const val = field.value.trim();
+      if(val) processInput(val);
+    }
+  }
+
+  /* ── DUAL INTERPRETATION BASH / CHAT NODE ── */
+  async function processInput(inputStr) {
+    if (isFetching) return;
+    const field = document.getElementById('termInputField');
+    const historyBox = document.getElementById('termHistory');
+    const cmd = inputStr.toLowerCase();
+    
+    field.value = '';
+    
+    const echoLine = document.createElement('div');
+    echoLine.innerHTML = `<span>chris@macbook ~ %</span> ${inputStr}`;
+    historyBox.appendChild(echoLine);
+
+    const logBox = document.createElement('div');
+    logBox.style.margin = "4px 0 12px";
+
+    // Scenario A: Native Command Terminal execution parameters
+    if (cmd === 'help' || cmd === 'skills' || cmd === 'projects' || cmd === 'clear') {
+      switch(cmd) {
+        case 'help':
+          logBox.innerHTML = `Internal Utility Maps:<br>
+          - <span class="term-accent">skills</span> : Output computational skill set.<br>
+          - <span class="term-accent">projects</span> : Load deployment build logs.<br>
+          - <span class="term-accent">clear</span> : Flush current overlay interface history.`;
+          break;
+        case 'skills':
+          logBox.innerHTML = `Python, PHP, CSS, Java, Flask, JavaFX, RAG System Architectures, Advanced Prompt Engineering.`;
+          break;
+        case 'projects':
+          logBox.innerHTML = `• Ethical Risk Classification System (2026)<br>• Speech Emotion Neural Matrix (2025)<br>• IoT Irrigation Stack (2024)`;
+          break;
+        case 'clear':
+          historyBox.innerHTML = '';
+          return;
+      }
+      historyBox.appendChild(logBox);
+      scrollToBottom();
+      return;
+    }
+
+    // Scenario B: Automated Streaming LLM Chatbot framework conversion loop
+    isFetching = true;
+    const indicator = document.createElement('div');
+    indicator.innerHTML = `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
+    historyBox.appendChild(indicator);
+    scrollToBottom();
+
+    chatHistory.push({ role: "user", content: inputStr });
+
+    try {
+      const response = await fetch(SYSTEM_GATEWAY.url, {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + SYSTEM_GATEWAY.key,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: SYSTEM_GATEWAY.model,
+          messages: chatHistory,
+          temperature: 0.5,
+          max_tokens: 150
+        })
+      });
+
+      const resData = await response.json();
+      const answer = resData.choices?.[0]?.message?.content || "Parsing gateway pipeline disconnect error.";
+      
+      indicator.remove();
+      logBox.innerHTML = answer;
+      historyBox.appendChild(logBox);
+      chatHistory.push({ role: "assistant", content: answer });
+    } catch {
+      indicator.remove();
+      logBox.innerHTML = `<span style="color:var(--accent)">Connection warning: LLM inference socket closed down.</span>`;
+      historyBox.appendChild(logBox);
+    }
+    
+    isFetching = false;
+    scrollToBottom();
+  }
+
+  function scrollToBottom() {
+    const bodyBox = document.querySelector('.mac-body');
+    bodyBox.scrollTop = bodyBox.scrollHeight;
+  }
+</script>
+</body>
+</html>
