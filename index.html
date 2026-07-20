@@ -217,12 +217,7 @@
 </div>
 
 <script>
-  /* ── HIDDEN API PARAMETERS MATRIX ── */
-  const SYSTEM_GATEWAY = {
-    key: "YOUR_GROQ_API_KEY_HERE", // IMPORTANT: Do not hardcode API keys in public repositories!
-    url: "https://api.groq.com/openai/v1/chat/completions",
-    model: "llama-3.3-70b-versatile"
-  };
+  /* ── HIDDEN API PARAMETERS MATRIX (REMOVED: MOVED TO SECURE BACKEND) ── */
 
   const AI_CONTEXT = `You are Chris Jobi, a second-year Computer Science & AI engineer at TKM College of Engineering. 
   Core Stack: Python, PHP, CSS, Flask, JavaFX, Machine Learning, NLP, RAG Systems, Advanced Prompt Engineering.
@@ -325,17 +320,13 @@
     chatHistory.push({ role: "user", content: inputStr });
 
     try {
-      const response = await fetch(SYSTEM_GATEWAY.url, {
+      const response = await fetch('http://127.0.0.1:5000/chat', {
         method: 'POST',
         headers: {
-          'Authorization': 'Bearer ' + SYSTEM_GATEWAY.key,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: SYSTEM_GATEWAY.model,
-          messages: chatHistory,
-          temperature: 0.5,
-          max_tokens: 150
+          messages: chatHistory
         })
       });
 
